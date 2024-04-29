@@ -557,19 +557,12 @@ exports.LoadUtils = () => {
     };
 
 
-    window.WWebJS.getChatModel = async chat => {
-
+    window.WWebJS.getChatModel = chat => {
         let res = chat.serialize();
         res.isGroup = chat.isGroup;
         res.formattedTitle = chat.formattedTitle;
         res.isMuted = chat.mute && chat.mute.isMuted;
-
-        if (chat.groupMetadata) {
-            const chatWid = window.Store.WidFactory.createWid((chat.id._serialized));
-            await window.Store.GroupMetadata.update(chatWid);
-            res.groupMetadata = chat.groupMetadata.serialize();
-        }
-        
+    
         res.lastMessage = null;
         if (res.msgs && res.msgs.length) {
             const lastMessage = chat.lastReceivedKey ? window.Store.Msg.get(chat.lastReceivedKey._serialized) : null;
@@ -578,10 +571,11 @@ exports.LoadUtils = () => {
             }
         }
         
-        delete res.msgs;
+        res.msgs = [];
+    
         delete res.msgUnsyncedButtonReplyMsgs;
         delete res.unsyncedButtonReplies;
-
+    
         return res;
     };
 
