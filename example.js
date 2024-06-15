@@ -15,12 +15,6 @@ client.initialize();
 client.on('loading_screen', (percent, message) => {
     console.log('LOADING SCREEN', percent, message);
 });
-client.pupPage.on('pageerror', function(err) {
-    console.log('Page error: ' + err.toString());
-});
-client.pupPage.on('error', function(err) {
-    console.log('Page error: ' + err.toString());
-});
 
 // Pairing code only needs to be requested once
 let pairingCodeRequested = false;
@@ -46,8 +40,18 @@ client.on('auth_failure', msg => {
     console.error('AUTHENTICATION FAILURE', msg);
 });
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log('READY');
+    const debugWWebVersion = await client.getWWebVersion();
+    console.log(`WWebVersion = ${debugWWebVersion}`);
+
+    client.pupPage.on('pageerror', function(err) {
+        console.log('Page error: ' + err.toString());
+    });
+    client.pupPage.on('error', function(err) {
+        console.log('Page error: ' + err.toString());
+    });
+    
 });
 
 client.on('message', async msg => {
@@ -610,4 +614,8 @@ client.on('group_membership_request', async (notification) => {
     /** You can approve or reject the newly appeared membership request: */
     await client.approveGroupMembershipRequestss(notification.chatId, notification.author);
     await client.rejectGroupMembershipRequests(notification.chatId, notification.author);
+});
+
+client.on('message_reaction', async (reaction) => {
+    console.log('REACTION RECEIVED', reaction);
 });
