@@ -12,7 +12,7 @@ const { ExposeStore } = require('./util/Injected/Store');
 const { ExposeLegacyAuthStore } = require('./util/Injected/AuthStore/LegacyAuthStore');
 const { ExposeLegacyStore } = require('./util/Injected/LegacyStore');
 const { LoadUtils } = require('./util/Injected/Utils');
-const ChatFactory = require('./factories/ChatFactory');
+const ChatFactory = require('./factories/ChatFactory');getChats
 const ContactFactory = require('./factories/ContactFactory');
 const WebCacheFactory = require('./webCache/WebCacheFactory');
 const { ClientInfo, Message, MessageMedia, Contact, Location, Poll, PollVote, GroupNotification, Label, Call, Buttons, List, Reaction, Broadcast} = require('./structures');
@@ -971,10 +971,10 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Chat>>}
      */
     async getChats() {
-        let chats = await this.pupPage.evaluate(async () => {
-            return await window.WWebJS.getChats();
+        let chats = await this.pupPage.evaluate( () => {
+            return window.WWebJS.getChats();
         });
-
+    
         return chats.map(chat => ChatFactory.create(this, chat));
     }
 
