@@ -97,7 +97,7 @@ class Client extends EventEmitter {
      */
     async inject() {
                
-               await this.pupPage.waitForFunction('window.Debug?.VERSION != undefined', {timeout: this.options.authTimeoutMs});       
+               await this.pupPage.waitForFunction('window.Debug?.VERSION != undefined', {timeout: 120000});       
         await this.setDeviceName(this.options.deviceName, this.options.browserName);
         const pairWithPhoneNumber = this.options.pairWithPhoneNumber;
         const version = await this.getWWebVersion();
