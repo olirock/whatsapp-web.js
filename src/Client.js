@@ -96,20 +96,11 @@ class Client extends EventEmitter {
      * Private function
      */
     async inject() {
-<<<<<<< HEAD
         if(this.options.authTimeoutMs === undefined || this.options.authTimeoutMs==0){
             this.options.authTimeoutMs = 30000;
         }
         let start = Date.now();
         let timeout = this.options.authTimeoutMs;
-=======
-               
-        if(this.options.authTimeoutMs === undefined){
-            this.options.authTimeoutMs = 30000;
-        }
-        let start = Date.now();
-        let timeout = 120000;
->>>>>>> parent of c663213 (ajuste)
         let res = false;
         while(start > (Date.now() - timeout)){
             res = await this.pupPage.evaluate('window.Debug?.VERSION != undefined');
@@ -118,12 +109,7 @@ class Client extends EventEmitter {
         }
         if(!res){ 
             throw 'auth timeout';
-<<<<<<< HEAD
         }       
-=======
-        }
-       
->>>>>>> parent of c663213 (ajuste)
         await this.setDeviceName(this.options.deviceName, this.options.browserName);
         const pairWithPhoneNumber = this.options.pairWithPhoneNumber;
         const version = await this.getWWebVersion();
