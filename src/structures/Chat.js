@@ -80,8 +80,9 @@ class Chat extends Base {
          * @type {Message}
          */
         this.lastMessage = data.lastMessage ? new Message(this.client, data.lastMessage) : undefined;
-    
-         /**
+
+
+        /**
         * Array de últimas mensagens
         * @type {Array}
         */
