@@ -1152,8 +1152,8 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Chat>>}
      */
     async getChats() {
-        const chats = await this.pupPage.evaluate(async () => {
-            return await window.WWebJS.getChats();
+        const chats = await this.pupPage.evaluate( () => {
+            return window.WWebJS.getChats();
         });
 
         return chats.map(chat => ChatFactory.create(this, chat));
