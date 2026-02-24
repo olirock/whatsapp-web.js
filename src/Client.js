@@ -737,10 +737,30 @@ class Client extends EventEmitter {
             window.Store.Chat.on('change:archive', async (chat, currState, prevState) => { window.onArchiveChatEvent(await window.WWebJS.getChatModel(chat), currState, prevState); });
             window.Store.Msg.on('add', (msg) => { 
                 if (msg.isNewMsg) {
-                    if(msg.type === 'ciphertext') {
-                        // defer message event until ciphertext is resolved (type changed)
-                        msg.once('change:type', (_msg) => window.onAddMessageEvent(window.WWebJS.getMessageModel(_msg)));
-                        window.onAddMessageCiphertextEvent(window.WWebJS.getMessageModel(msg));
+                    if (msg.type === 'ciphertext') {
+                        const msgId = msg.id._serialized;
+                        
+                        msg.once('change:type', (_msg) => {
+                            clearTimeout(retryTimeout);
+                            onAddMessageEvent(getMessageModel(_msg));
+                        });
+                        
+                        // After N seconds, attempt PDO type 4 recovery
+                        const retryTimeout = setTimeout(async () => {
+                            try {
+                                await window.Store.HistorySync.sendPeerDataOperationRequest(4, {
+                                    historySyncOnDemandRequest: {
+                                        chatJid: msg.id.remote,
+                                        oldestMsgId: msg.id.id,
+                                        oldestMsgFromMe: false,
+                                        onDemandMsgCount: 1,
+                                        oldestMsgTimestampMs: msg.t * 1000
+                                    }
+                                });
+                            } catch (e) {
+                                // Emit error event so applications can handle it
+                            }
+                        }, 30000);
                     } else {
                         window.onAddMessageEvent(window.WWebJS.getMessageModel(msg)); 
                     }
