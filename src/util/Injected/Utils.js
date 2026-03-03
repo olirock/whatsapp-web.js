@@ -727,7 +727,7 @@ exports.LoadUtils = () => {
         return await Promise.all(channelPromises);
     };
 
-    window.WWebJS.getChatModel = async (chat, { isChannel = false } = {}) => {
+    window.WWebJS.getChatModel = (chat, { isChannel = false } = {}) => {
         if (!chat) return null;
 
         const model = chat.serialize();
@@ -739,7 +739,7 @@ exports.LoadUtils = () => {
             model.formattedTitle = chat.formattedTitle;
         }
 
-        if (chat.groupMetadata) {
+        /*if (chat.groupMetadata) {
             model.isGroup = true;
             const chatWid = window.require('WAWebWidFactory').createWid(chat.id._serialized);
             const groupMetadata = (window.require('WAWebCollections')).GroupMetadata || (window.require('WAWebCollections')).WAWebGroupMetadataCollection;
@@ -756,7 +756,7 @@ exports.LoadUtils = () => {
             await newsletterMetadata.update(chat.id);
             model.channelMetadata = chat.newsletterMetadata.serialize();
             model.channelMetadata.createdAtTs = chat.newsletterMetadata.creationTime;
-        }
+        }*/
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
