@@ -652,7 +652,7 @@ exports.LoadUtils = () => {
                 .forEach(x => x.contact?.phoneNumber && (x.id = x.contact.phoneNumber));
             model.groupMetadata = chat.groupMetadata.serialize();
             model.isReadOnly = chat.groupMetadata.announce;
-        }*/
+        }
 
         if (chat.newsletterMetadata) {
             const newsletterMetadata = window.Store.NewsletterMetadataCollection || window.Store.WAWebNewsletterMetadataCollection;
@@ -668,8 +668,18 @@ exports.LoadUtils = () => {
                 : null;
             lastMessage && (model.lastMessage = window.WWebJS.getMessageModel(lastMessage));
         }
+        */
 
-        delete model.msgs;
+        model.lastMessage = null;
+        if (model.msgs && model.msgs.length) {
+            const lastMessage = chat.lastReceivedKey ? window.Store.Msg.get(chat.lastReceivedKey._serialized) : null;
+            if (lastMessage) {
+                model.lastMessage = window.WWebJS.getMessageModel(lastMessage);
+            }
+        }
+
+        model.msgs = [];
+
         delete model.msgUnsyncedButtonReplyMsgs;
         delete model.unsyncedButtonReplies;
 
