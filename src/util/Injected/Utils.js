@@ -566,7 +566,7 @@ exports.LoadUtils = () => {
     };
 
     window.WWebJS.getChat = async (chatId, { getAsModel = true } = {}) => {
-        const isChannel = false; ///@\w*newsletter\b/.test(chatId);
+        const isChannel = /@\w*newsletter\b/.test(chatId);
         const chatWid = window.Store.WidFactory.createWid(chatId);
         let chat;
 
@@ -653,15 +653,14 @@ exports.LoadUtils = () => {
             model.groupMetadata = chat.groupMetadata.serialize();
             model.isReadOnly = chat.groupMetadata.announce;
         }
-*/
+
         if (chat.newsletterMetadata) {
             const newsletterMetadata = window.Store.NewsletterMetadataCollection || window.Store.WAWebNewsletterMetadataCollection;
-            newsletterMetadata.update(chat.id);
+            await newsletterMetadata.update(chat.id);
             model.channelMetadata = chat.newsletterMetadata.serialize();
             model.channelMetadata.createdAtTs = chat.newsletterMetadata.creationTime;
         }
-    
-/*
+
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
             const lastMessage = chat.lastReceivedKey
@@ -669,7 +668,7 @@ exports.LoadUtils = () => {
                 : null;
             lastMessage && (model.lastMessage = window.WWebJS.getMessageModel(lastMessage));
         }
-  */      
+        */
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
