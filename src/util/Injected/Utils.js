@@ -661,7 +661,7 @@ exports.LoadUtils = () => {
             model.channelMetadata.createdAtTs = chat.newsletterMetadata.creationTime;
         }
     
-
+/*
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
             const lastMessage = chat.lastReceivedKey
@@ -669,7 +669,7 @@ exports.LoadUtils = () => {
                 : null;
             lastMessage && (model.lastMessage = window.WWebJS.getMessageModel(lastMessage));
         }
-        
+  */      
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
