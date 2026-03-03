@@ -1111,24 +1111,27 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Chat>>}
      */
     async getChats() {
-    const result = await this.pupPage.evaluate(async () => {
-        try {
-        if (!window.WWebJS?.getChats) {
-            return { ok: false, error: 'WWebJS.getChats not available' };
-        }
-        const chats = await window.WWebJS.getChats();
-        return { ok: true, chats };
-        } catch (e) {
-        return { ok: false, error: e?.message || String(e) };
-        }
-    });
+  const chats = await this.pupPage.evaluate(async () => {
+    try {
+      console.log('WWebJS exists?', !!window.WWebJS);
+      console.log('getChats exists?', !!window.WWebJS?.getChats);
 
-    if (!result.ok) {
-        throw new Error(`getChats failed: ${result.error}`);
-    }
+      const collections = window.require?.('WAWebCollections');
+      const count = collections?.Chat?.getModelsArray?.().length;
+      console.log('Chat count:', count);
 
-    return result.chats.map(chat => ChatFactory.create(this, chat));
+      const result = await window.WWebJS.getChats();
+      console.log('getChats result length:', result?.length);
+
+      return result;
+    } catch (e) {
+      console.error('getChats error:', e?.message || String(e));
+      throw e;
     }
+  });
+
+  return chats.map(chat => ChatFactory.create(this, chat));
+}
 
 
     /**
