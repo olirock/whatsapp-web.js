@@ -1111,12 +1111,25 @@ class Client extends EventEmitter {
      * @returns {Promise<Array<Chat>>}
      */
     async getChats() {
-        const chats = await this.pupPage.evaluate( () => {
-            return window.WWebJS.getChats();
-        });
+    const result = await this.pupPage.evaluate(async () => {
+        try {
+        if (!window.WWebJS?.getChats) {
+            return { ok: false, error: 'WWebJS.getChats not available' };
+        }
+        const chats = await window.WWebJS.getChats();
+        return { ok: true, chats };
+        } catch (e) {
+        return { ok: false, error: e?.message || String(e) };
+        }
+    });
 
-        return chats.map(chat => ChatFactory.create(this, chat));
+    if (!result.ok) {
+        throw new Error(`getChats failed: ${result.error}`);
     }
+
+    return result.chats.map(chat => ChatFactory.create(this, chat));
+    }
+
 
     /**
      * Gets all cached {@link Channel} instance
