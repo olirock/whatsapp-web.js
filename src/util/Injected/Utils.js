@@ -653,13 +653,14 @@ exports.LoadUtils = () => {
             model.groupMetadata = chat.groupMetadata.serialize();
             model.isReadOnly = chat.groupMetadata.announce;
         }
-
+*/
         if (chat.newsletterMetadata) {
             const newsletterMetadata = window.Store.NewsletterMetadataCollection || window.Store.WAWebNewsletterMetadataCollection;
-            await newsletterMetadata.update(chat.id);
+            newsletterMetadata.update(chat.id);
             model.channelMetadata = chat.newsletterMetadata.serialize();
             model.channelMetadata.createdAtTs = chat.newsletterMetadata.creationTime;
         }
+    
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
@@ -668,7 +669,7 @@ exports.LoadUtils = () => {
                 : null;
             lastMessage && (model.lastMessage = window.WWebJS.getMessageModel(lastMessage));
         }
-        */
+        
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
