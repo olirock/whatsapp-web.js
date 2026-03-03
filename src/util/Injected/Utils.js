@@ -749,14 +749,14 @@ exports.LoadUtils = () => {
                 .forEach(x => x.contact?.phoneNumber && (x.id = x.contact.phoneNumber));
             model.groupMetadata = chat.groupMetadata.serialize();
             model.isReadOnly = chat.groupMetadata.announce;
-        }
+        }*/
 
         if (chat.newsletterMetadata) {
-            const newsletterMetadata = (window.require('WAWebCollections')).NewsletterMetadataCollection || (window.require('WAWebCollections')).WAWebNewsletterMetadataCollection;
-            await newsletterMetadata.update(chat.id);
-            model.channelMetadata = chat.newsletterMetadata.serialize();
-            model.channelMetadata.createdAtTs = chat.newsletterMetadata.creationTime;
-        }*/
+            //const newsletterMetadata = (window.require('WAWebCollections')).NewsletterMetadataCollection || (window.require('WAWebCollections')).WAWebNewsletterMetadataCollection;
+            //await newsletterMetadata.update(chat.id);
+            //model.channelMetadata = chat.newsletterMetadata.serialize();
+            //model.channelMetadata.createdAtTs = chat.newsletterMetadata.creationTime;
+        }
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
