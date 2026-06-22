@@ -949,7 +949,7 @@ exports.LoadUtils = () => {
             model.formattedTitle = chat.formattedTitle;
         }
 
-        if (chat.groupMetadata) {
+        /*if (chat.groupMetadata) {
             model.isGroup = true;
             const chatWid = window
                 .require('WAWebWidFactory')
@@ -966,6 +966,7 @@ exports.LoadUtils = () => {
             model.groupMetadata = serializedMetadata;
             model.isReadOnly = chat.groupMetadata.announce;
         }
+        */
 
         if (chat.newsletterMetadata) {
             const newsletterMetadata =
@@ -998,7 +999,7 @@ exports.LoadUtils = () => {
                     window.WWebJS.getMessageModel(lastMessage));
         }
 
-        delete model.msgs;
+        model.msgs = [];
         delete model.msgUnsyncedButtonReplyMsgs;
         delete model.unsyncedButtonReplies;
 
