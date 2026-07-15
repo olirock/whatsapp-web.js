@@ -982,21 +982,24 @@ exports.LoadUtils = () => {
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
-            const lastMessage = chat.lastReceivedKey
-                ? window
-                      .require('WAWebCollections')
-                      .Msg.get(chat.lastReceivedKey._serialized) ||
-                  (
-                      await window
-                          .require('WAWebCollections')
-                          .Msg.getMessagesById([
-                              chat.lastReceivedKey._serialized,
-                          ])
-                  )?.messages?.[0]
+            const lastReceivedKey = chat.lastReceivedKey
+                ? (chat.lastReceivedKey._serialized || chat.lastReceivedKey.$1)
                 : null;
-            lastMessage &&
-                (model.lastMessage =
-                    window.WWebJS.getMessageModel(lastMessage));
+
+            const lastMessage = lastReceivedKey
+                ? (
+                    window.require('WAWebCollections').Msg.get(lastReceivedKey) ||
+                    (
+                        await window
+                            .require('WAWebCollections')
+                            .Msg.getMessagesById([lastReceivedKey])
+                    )?.messages?.[0]
+                )
+                : null;
+
+            if (lastMessage) {
+                model.lastMessage = window.WWebJS.getMessageModel(lastMessage);
+            }
         }
 
         model.msgs = [];
