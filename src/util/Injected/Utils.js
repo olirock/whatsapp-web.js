@@ -793,7 +793,20 @@ exports.LoadUtils = () => {
         const mediaPrep = window
             .require('WAWebPrepRawMedia')
             .prepRawMedia(opaqueData, mediaParams);
-        const mediaData = await mediaPrep.waitForPrep();
+        const preparedMedia = await mediaPrep.waitForPrep();
+        const mediaData =
+            mediaPrep._mediaData ||
+            mediaPrep.mediaData ||
+            (preparedMedia?.filehash ? preparedMedia : undefined);
+
+        if (!mediaData) {
+            throw new Error('media-fault: media preparation returned no data');
+        }
+
+        if (!mediaData.filehash) {
+            throw new Error('media-fault: sendToChat filehash undefined');
+        }
+
         const mediaObject = window
             .require('WAWebMediaStorage')
             .getOrCreateMediaObject(mediaData.filehash);
@@ -802,10 +815,6 @@ exports.LoadUtils = () => {
             isGif: mediaData.isGif,
             isNewsletter: sendToChannel,
         });
-
-        if (!mediaData.filehash) {
-            throw new Error('media-fault: sendToChat filehash undefined');
-        }
 
         if (
             (forceVoice && mediaData.type === 'ptt') ||
