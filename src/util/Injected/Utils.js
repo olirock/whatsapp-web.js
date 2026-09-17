@@ -110,6 +110,63 @@ exports.LoadUtils = () => {
         },
     );
 
+    window.WWebJS.loadLazyModule = async (moduleId, components) => {
+        let module = window.require(moduleId);
+        if (module) return module;
+
+        const bootloaderModule = window.require('Bootloader');
+        const bootloader =
+            typeof bootloaderModule?.loadModules === 'function'
+                ? bootloaderModule
+                : bootloaderModule?.default;
+
+        if (typeof bootloader?.loadModules !== 'function') return undefined;
+
+        const componentMap = bootloader.__debug?.componentMap;
+        const availableComponents = components.filter(
+            (component) =>
+                typeof componentMap?.has !== 'function' ||
+                componentMap.has(component),
+        );
+
+        for (const component of availableComponents) {
+            try {
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(
+                        () =>
+                            reject(
+                                new Error(
+                                    `Timed out loading WhatsApp module ${moduleId}`,
+                                ),
+                            ),
+                        30000,
+                    );
+
+                    try {
+                        bootloader.loadModules(
+                            [component],
+                            () => {
+                                clearTimeout(timeout);
+                                resolve();
+                            },
+                            'WWebJS',
+                        );
+                    } catch (error) {
+                        clearTimeout(timeout);
+                        reject(error);
+                    }
+                });
+            } catch {
+                continue;
+            }
+
+            module = window.require(moduleId);
+            if (module) return module;
+        }
+
+        return undefined;
+    };
+
     window.WWebJS.forwardMessage = async (chatId, msgId) => {
         const msg =
             window.require('WAWebCollections').Msg.get(msgId) ||
@@ -120,10 +177,28 @@ exports.LoadUtils = () => {
             )?.messages?.[0];
         const chat = await window.WWebJS.getChat(chatId, { getAsModel: false });
 
-            console.log(msg);
-            console.log(chat);
+        if (!msg) throw new Error(`Could not find message ${msgId}`);
+        if (!chat) throw new Error(`Could not find chat ${chatId}`);
 
-        return await window.require('WAWebChatForwardMessage').forwardMessages({
+        const forwardModule = await window.WWebJS.loadLazyModule(
+            'WAWebChatForwardMessage',
+            [
+                'WAWebMediaForwardMediaMsg',
+                'WAWebForwardMessageFlow.react',
+                'WAWebForwardMessageModal.react',
+            ],
+        );
+        const forwardMessages =
+            forwardModule?.forwardMessages ||
+            forwardModule?.default?.forwardMessages;
+
+        if (typeof forwardMessages !== 'function') {
+            throw new Error(
+                "WhatsApp's forwardMessages function is not available in this session",
+            );
+        }
+
+        return await forwardMessages({
             chat: chat,
             msgs: [msg],
             multicast: true,
