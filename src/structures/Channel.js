@@ -31,6 +31,7 @@ class Channel extends Base {
          */
         this.id = Base._normalizeId(data.id);
         
+
         /**
          * Title of the channel
          * @type {string}
