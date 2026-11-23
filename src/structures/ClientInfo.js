@@ -26,7 +26,6 @@ class ClientInfo extends Base {
          */
         this.wid = Base._normalizeId(data.wid);
         
-
         /**
          * @type {object}
          * @deprecated Use .wid instead

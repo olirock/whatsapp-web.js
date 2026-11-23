@@ -21,7 +21,6 @@ class Broadcast extends Base {
          */
         this.id = Base._normalizeId(data.id);
         
-
         /**
          * Unix timestamp of last status
          * @type {number}

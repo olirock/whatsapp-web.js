@@ -562,12 +562,9 @@ exports.LoadUtils = () => {
             ...extraOptions,
         };
 
-        // MediaData is a model whose private __x_id field collides with Msg's
-        // internal id field when its enumerable properties are spread above,
-        // breaking getValidatedSender() during Msg initialization.
-        if (message.__x_id) {
-            delete message.__x_id;
-        }
+        // MediaData exposes a private ID that conflicts with Msg's internal ID.
+        delete message.__x_id;
+
         // Bot's won't reply if canonicalUrl is set (linking)
         if (botOptions) {
             delete message.canonicalUrl;
@@ -1075,10 +1072,9 @@ exports.LoadUtils = () => {
 
         model.lastMessage = null;
         if (model.msgs && model.msgs.length) {
-            const _lastReceivedKeyId = chat.lastReceivedKey
-                ? chat.lastReceivedKey._serialized || chat.lastReceivedKey.$1
+            const lastReceivedKey = chat.lastReceivedKey
+                ? (chat.lastReceivedKey._serialized || chat.lastReceivedKey.$1)
                 : null;
-            
 
             const lastMessage = lastReceivedKey
                 ? (
@@ -1420,8 +1416,9 @@ exports.LoadUtils = () => {
     window.WWebJS.rejectCall = async (peerJid, id) => {
         const _meUser = window
             .require('WAWebUserPrefsMeUser')
-            .getMaybeMePnUser();
+             .getMaybeMePnUser();
         let userId = _meUser._serialized || _meUser.$1;
+
 
         const stanza = window.require('WAWap').wap(
             'call',

@@ -21,7 +21,6 @@ class Chat extends Base {
          */
         this.id = Base._normalizeId(data.id);
         
-
         /**
          * Title of the chat
          * @type {string}
