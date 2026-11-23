@@ -142,29 +142,30 @@ class Client extends EventEmitter {
 
             const needAuthHandle = await this.pupPage.waitForFunction(
                 () => {
-                    let state;
-                    try {
-                        state =
-                            window.require?.('WAWebSocketModel')?.Socket?.state;
-                    } catch (_) {
-                        return false;
-                    }
+                    const loginRoute =
+                        window.location.pathname.startsWith('/login');
+                    const state = loginRoute
+                        ? window.require?.('WAWebBackendEventBus')
+                              ?.BackendEventBus?.socketState
+                        : window.require?.('WAWebSocketModel')?.Socket?.state;
+                    const need =
+                        state === 'UNPAIRED' || state === 'UNPAIRED_IDLE';
+
                     if (
                         !state ||
                         state === 'OPENING' ||
                         state === 'UNLAUNCHED' ||
-                        state === 'PAIRING'
+                        state === 'PAIRING' ||
+                        (loginRoute && !need)
                     ) {
                         return false;
                     }
-                    return {
-                        need: state === 'UNPAIRED' || state === 'UNPAIRED_IDLE',
-                        state,
-                    };
+                    return { need, state, loginRoute };
                 },
                 { timeout: authTimeout, polling: 200 },
             );
             const needAuthentication = await needAuthHandle.jsonValue();
+                        const loginRoute = needAuthentication.loginRoute === true;
 
             if (needAuthentication.need) {
                 const { failed, failureEventPayload, restart } =
@@ -225,8 +226,8 @@ class Client extends EventEmitter {
                         },
                     );
 
-                    await this.pupPage.evaluate(async () => {
-                        const registrationInfo = await window
+                    await this.pupPage.evaluate(async (loginRoute) => {
+                     const registrationInfo = await window
                             .require('WAWebSignalStoreApi')
                             .waSignalStore.getRegistrationInfo();
                         const noiseKeyPair = await window
@@ -267,7 +268,9 @@ class Client extends EventEmitter {
                             .require('WAWebConnModel')
                             .Conn.on('change:ref', onRefChange); // future QR changes
 
-                        // Remove QR listener once authentication succeeds
+                        // Remove QR listener once authentication succeeds. The /login
+                        // route has no Socket and navigates away on success instead.
+                        if (loginRoute) return;                        
                         window
                             .require('WAWebSocketModel')
                             .Socket.on('change:hasSynced', () => {
@@ -275,7 +278,7 @@ class Client extends EventEmitter {
                                     .require('WAWebConnModel')
                                     .Conn.off('change:ref', onRefChange);
                             });
-                    });
+                    }, loginRoute);
                 }
             }
 
@@ -289,7 +292,15 @@ class Client extends EventEmitter {
                     ) {
                         // refresh qr code
                         await this.pupPage.evaluate(() => {
-                            window.require('WAWebCmd').Cmd.refreshQR();
+                            const Cmd = window.require('WAWebCmd').Cmd;
+                            if (typeof Cmd.refreshQR === 'function') {
+                                return Cmd.refreshQR();
+                            }
+                            // The /login bundle has no Cmd.refreshQR; its QR screen
+                            // refreshes through the backend event bus.
+                            window
+                                .require('WAWebBackendEventBus')
+                                .BackendEventBus.triggerRefreshQR();
                         });
                     }
                 },
@@ -396,7 +407,38 @@ class Client extends EventEmitter {
                         .catch((_) => _);
                 },
             );
-            await this.pupPage.evaluate(() => {
+            await this.pupPage.evaluate((loginRoute) => {
+                // Clean up old listeners to prevent accumulation on re-inject
+                if (window._wwjsListeners) {
+                    for (const [obj, event, handler] of window._wwjsListeners) {
+                        obj.off(event, handler);
+                    }
+                }
+
+                if (loginRoute) {
+                    // Standalone /login route: no Socket model. Only the connection
+                    // state matters here (UNPAIRED_IDLE refreshes the QR); pairing
+                    // ends in a navigation to '/', which injects again.
+                    const { BackendEventBus } = window.require(
+                        'WAWebBackendEventBus',
+                    );
+                    const listeners = [
+                        [
+                            BackendEventBus,
+                            'set_socket_state',
+                            () => {
+                                window.onAuthAppStateChangedEvent(
+                                    BackendEventBus.socketState,
+                                );
+                            },
+                        ],
+                    ];
+                    for (const [obj, event, handler] of listeners) {
+                        obj.on(event, handler);
+                    }
+                    window._wwjsListeners = listeners;
+                    return;
+                }
                 const Socket = window.require('WAWebSocketModel').Socket;
                 const Cmd = window.require('WAWebCmd').Cmd;
 
@@ -442,12 +484,6 @@ class Client extends EventEmitter {
                     ],
                 ];
 
-                // Clean up old listeners to prevent accumulation on re-inject
-                if (window._wwjsListeners) {
-                    for (const [obj, event, handler] of window._wwjsListeners) {
-                        obj.off(event, handler);
-                    }
-                }
 
                 for (const [obj, event, handler] of listeners) {
                     obj.on(event, handler);
@@ -461,7 +497,7 @@ class Client extends EventEmitter {
                 if (Socket.hasSynced === true && !storeInjected) {
                     window.onAppStateHasSyncedEvent();
                 }
-            });
+            }, loginRoute);
         } catch (err) {
             if (abort.signal.aborted) return; // superseded by newer inject
             throw err;
