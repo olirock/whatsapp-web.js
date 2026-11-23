@@ -1078,23 +1078,21 @@ exports.LoadUtils = () => {
             const _lastReceivedKeyId = chat.lastReceivedKey
                 ? chat.lastReceivedKey._serialized || chat.lastReceivedKey.$1
                 : null;
-            
-
-            const lastMessage = lastReceivedKey
-                ? (
-                    window.require('WAWebCollections').Msg.get(lastReceivedKey) ||
-                    (
-                        await window
-                            .require('WAWebCollections')
-                            .Msg.getMessagesById([lastReceivedKey])
-                    )?.messages?.[0]
-                )
+            const lastMessage = _lastReceivedKeyId
+                ? window
+                      .require('WAWebCollections')
+                      .Msg.get(_lastReceivedKeyId) ||
+                  (
+                      await window
+                          .require('WAWebCollections')
+                          .Msg.getMessagesById([_lastReceivedKeyId])
+                  )?.messages?.[0]
                 : null;
-
-            if (lastMessage) {
-                model.lastMessage = window.WWebJS.getMessageModel(lastMessage);
-            }
+            lastMessage &&
+                (model.lastMessage =
+                    window.WWebJS.getMessageModel(lastMessage));
         }
+
 
         model.msgs = [];
         delete model.msgUnsyncedButtonReplyMsgs;
