@@ -122,10 +122,6 @@ class Client extends EventEmitter {
             await this.pupPage
                 .waitForFunction('window.Debug?.VERSION != undefined', {
                     timeout: authTimeout,
-                    // These readiness checks observe application state, not
-                    // rendering. Timer polling still runs when animation
-                    // callbacks are throttled or suspended.
-                    polling: 200,
                     signal: abort.signal,
                 })
                 .catch((err) => {
@@ -157,7 +153,7 @@ class Client extends EventEmitter {
                         state,
                     };
                 },
-                { timeout: authTimeout, polling: 200 },
+                { timeout: authTimeout },
             );
             const needAuthentication = await needAuthHandle.jsonValue();
 
